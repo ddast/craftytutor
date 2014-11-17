@@ -1,0 +1,3 @@
+consistency check at startup:
+  all fields exist (even if empty) and have valid values
+
