@@ -25,7 +25,7 @@ import argparse
 import os.path
 import xml.etree.ElementTree as ET
 
-import StringCompleter
+import stringcompleter.stringcompleter as stringcompleter
 
 
 class CraftyTutor(cmd.Cmd):
@@ -149,12 +149,12 @@ class CraftyTutor(cmd.Cmd):
 
     def set_empty_completion(self):
         """Switch off readline completion."""
-        completer = StringCompleter.StringCompleter([])
+        completer = stringcompleter.StringCompleter([])
         readline.set_completer(completer.complete)
 
     def set_name_completion(self):
         """Use readline completion for the students names."""
-        completer = StringCompleter.StringCompleter(self.names)
+        completer = stringcompleter.StringCompleter(self.names)
         readline.set_completer(completer.complete)
 
     def get_sheet(self, sheet):
