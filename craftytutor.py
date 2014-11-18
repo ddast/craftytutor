@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ##########################################################################
 # craftytutor.py - Command-line driven tutorial group managment          #
 #                                                                        #
@@ -303,7 +305,8 @@ class CraftyTutor(cmd.Cmd):
         prob_maxscores = []
         for prob in cursheet.findall('prob'):
             prob_no = prob.attrib['no']
-            do_rate = ask_yes_no("Rate problem {}?".format(prob_no), 'yes')
+            do_rate = ask_yes_no("Rate problem {}({})?".format(
+                prob_no, prob.attrib["type"]), 'yes')
             if do_rate:
                 prob_numbers.append(prob_no)
                 prob_maxscores.append(prob.text)
@@ -449,9 +452,9 @@ class CraftyTutor(cmd.Cmd):
                     "Include vote points of current sheet?", 'no')
         total_written = self.get_total_points('w')
         total_vote = self.get_total_points('v')
-        if not print_cur_w:
+        if print_percent and not print_cur_w:
             total_written -= self.get_points(sheet, 'w')
-        if not print_cur_v:
+        if print_percent and not print_cur_v:
             total_vote -= self.get_points(sheet, 'v')
         # get titles
         title = self.root_group.find('title').text
@@ -473,8 +476,8 @@ class CraftyTutor(cmd.Cmd):
         ftable.write("\\begin{document}\n\n")
         ftable.write("\\exTitle({})\n\\exSubtitle({}{})\n\n".format(
             title, subtitle, sheet))
-        ftable.write("\\setHandInPoints({})\n\\setVotePoints({})\n".format(
-            total_written, total_vote))
+        ftable.write("\\setHandInPoints({:.6g})\n\\setVotePoints({:.6g})\n"
+                .format(total_written, total_vote))
         # write problems
         for prob in xsheet.findall('prob'):
             ftable.write("\\addProblem(A{})({})\n".format(
@@ -497,7 +500,7 @@ class CraftyTutor(cmd.Cmd):
                 perc_v = 100.*scores[1]/total_vote
             except ZeroDivisionError:
                 perc_v = 100.
-            ftable.write("({:.2f})({:.2f})".format(perc_w, perc_v))
+            ftable.write("({:.2f})({:.2f})".format(perc_v, perc_w))
             # score of current sheet
             for prob in xsheet.findall('prob'):
                 ftable.write("({})".format(
