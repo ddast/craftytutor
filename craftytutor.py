@@ -52,13 +52,13 @@ class CraftyTutor(cmd.Cmd):
         self.groupfile = group
         # backup if file exists else initialize new files
         if os.path.exists(sheets):
-            shutil.copyfile(sheets, sheets + ".bak")
+            shutil.copyfile(sheets, sheets + ".old")
         else:
             print("Creating new sheets file, use newsheet <arg> to fill.\n")
             self.init_xml(sheets)
         newsheet = False
         if os.path.exists(group):
-            shutil.copyfile(group, group + ".bak")
+            shutil.copyfile(group, group + ".old")
         else:
             print("Creating new group file...")
             self.init_xml(group)
