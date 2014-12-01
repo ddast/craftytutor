@@ -315,50 +315,90 @@ class CraftyTutor(cmd.Cmd):
         if not prob_numbers:
             return
 
+        # either iterate over all students in list or choose each student
+        if ask_yes_no("Rate students in order?", 'yes'):
+            self.ratesheet_iteratestuds(cursheet, prob_numbers)
+        else:
+            self.ratesheet_askforstud(cursheet, prob_numbers)
+
+    def ratesheet_askforstud(self, cursheet, prob_numbers):
+        # ask for students loop
+        print("\nExit by entering empty name.")
+        while True:
+            # get current student
+            while True:
+                # use name completion
+                self.set_name_completion()
+                # ask for student
+                try:
+                    stud = input("\nStudent: ")
+                # exit on invalid input
+                except:
+                    print()
+                    return
+                # continue if correct name is given
+                if stud in self.names:
+                    break
+                # exit on empty input
+                if not stud:
+                    return
+                # if we are here, student in not in list
+                print("Unknown student. Stop making up names!")
+            # get xml tree of student
+            xstud = self.root_group.find("student[name='{}']".format(stud))
+            # rate this student
+            self.ratesheet_singlestud(cursheet, prob_numbers, xstud)
+
+    def ratesheet_singlestud(self, cursheet, prob_numbers, stud):
+        # extract sheet number
+        sheetno = cursheet.attrib['no']
+        # create new sheet item
+        xsheet = ET.Element('sheet', {'no': sheetno})
+        # iterate over all probs of the sheet
+        for prob in cursheet.findall('prob'):
+            probno = prob.attrib['no']
+            # rate problem
+            if probno in prob_numbers:
+                maxscore = prob.text
+                xprob = ET.SubElement(xsheet, 'prob', {'no': probno})
+                # loop until valid value is given
+                while True:
+                    try:
+                        score = input_def("Problem {}".format(probno),
+                                maxscore)
+                    except:
+                        print()
+                        return
+                    # consistency check
+                    try:
+                        fscore = float(score)
+                    except ValueError:
+                        print("Only numbers allowed")
+                        continue
+                    if fscore > float(maxscore):
+                        print("Score is greater than maximal score")
+                        continue
+                    break
+                # store score
+                xprob.text = score
+            # or keep old entry
+            else:
+                xprob = ET.SubElement(xsheet, 'prob', {'no': probno})
+                xprob.text = text_or_none(
+                        stud.find("./sheet[@no='{}']/prob[@no='{}']".format(
+                            sheetno, probno)))
+        # delete existing
+        lold = stud.findall("./sheet[@no='{}']".format(sheetno))
+        for old in lold:
+            stud.remove(old)
+        # add to student
+        stud.append(xsheet)
+
+    def ratesheet_iteratestuds(self, cursheet, prob_numbers):
         # iterate over all students and ask for scores
         for stud in self.root_group.findall('student'):
             print("\n{}".format(stud.find('name').text))
-            # create new sheet item
-            xsheet = ET.Element('sheet', {'no': cursheet.attrib['no']})
-            # iterate over all probs of the sheet
-            for prob in cursheet.findall('prob'):
-                probno = prob.attrib['no']
-                # rate problem
-                if probno in prob_numbers:
-                    maxscore = prob.text
-                    xprob = ET.SubElement(xsheet, 'prob', {'no': probno})
-                    # loop until valid value is given
-                    while True:
-                        try:
-                            score = input_def("Problem {}".format(probno),
-                                    maxscore)
-                        except:
-                            print()
-                            return
-                        # consistency check
-                        try:
-                            fscore = float(score)
-                        except ValueError:
-                            print("Only numbers allowed")
-                            continue
-                        if fscore > float(maxscore):
-                            print("Score is greater than maximal score")
-                            continue
-                        break
-                    # store score
-                    xprob.text = score
-                # or keep old entry
-                else:
-                    xprob = ET.SubElement(xsheet, 'prob', {'no': probno})
-                    xprob.text = text_or_none(
-                            stud.find("./sheet[@no='{}']/prob[@no='{}']".format(
-                                sheet, probno)))
-            # delete existing
-            lold = stud.findall("./sheet[@no='{}']".format(sheet))
-            for old in lold:
-                stud.remove(old)
-            # add to student
-            stud.append(xsheet)
+            self.ratesheet_singlestud(cursheet, prob_numbers, stud)
 
     def presented(self, sheet):
         """Interactively ask who presented the problems."""
