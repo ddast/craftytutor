@@ -72,12 +72,15 @@ class CraftyTutor(cmd.Cmd):
     def precmd(self, line):
         """Unset command autocompletion inside the commands."""
         self.oldcompleter = readline.get_completer()
+        self.oldcompleterdelims = readline.get_completer_delims()
+        readline.set_completer_delims('')
         self.set_empty_completion()
         return line
 
     def postcmd(self, stop, line):
         """Reset command autocompletion before returning."""
         readline.set_completer(self.oldcompleter)
+        readline.set_completer_delims(self.oldcompleterdelims)
         return stop
 
     ####################################################################
@@ -599,8 +602,6 @@ def main():
 
     # set readline options
     readline.parse_and_bind('set editing-mode vi')
-    readline.set_completer_delims(
-            readline.get_completer_delims().replace(' ', ''))
 
     # fire up the CraftyTutor
     ct = CraftyTutor(args.sheets, args.group)
