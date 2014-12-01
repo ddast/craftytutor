@@ -441,7 +441,8 @@ class CraftyTutor(cmd.Cmd):
                 "./sheet/prob[@type='{}']".format(problemtype))
         total = 0.0
         for prob in probs:
-            total += float(prob.text)
+            if prob.text:
+                total += float(prob.text)
         return total
 
     def get_points(self, sheet, problemtype):
@@ -455,7 +456,8 @@ class CraftyTutor(cmd.Cmd):
                     problemtype))
         total = 0.0
         for prob in probs:
-            total += float(prob.text)
+            if prob.text:
+                total += float(prob.text)
         return total
 
     def get_points_of_stud(self, stud):
@@ -477,6 +479,8 @@ class CraftyTutor(cmd.Cmd):
                         "./sheet[@no='{}']/prob[@no='{}']".format(
                             sheet_no, prob_no)).attrib['type']
                 # sum up
+                if not prob.text:
+                    continue
                 score = float(prob.text)
                 if prob_type == 'w':
                     total_w += score
