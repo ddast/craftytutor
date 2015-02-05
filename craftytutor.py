@@ -129,6 +129,10 @@ class CraftyTutor(cmd.Cmd):
         "Create a LaTeX file with table for sheet <arg>"
         self.print_table(arg)
 
+    def do_scheine(self, arg):
+        "Print LaTeX file for the Scheine"
+        self.print_scheine()
+
     def do_quit(self, arg):
         "Quit the crafty tutor."
         return ask_yes_no("Are you sure?", 'no')
@@ -566,6 +570,21 @@ class CraftyTutor(cmd.Cmd):
         ftable.write("\n\\makeTable\n\n\\end{document}")
         # close file
         ftable.close()
+
+    def print_scheine(self):
+        "Print LaTeX file for the Scheine"
+        filename = "scheine_{}.tex".format(self.groupfile.replace(".xml", ""))
+        fscheine = open(filename, 'w')
+        print("Does ... get a Schein?")
+        for stud in self.root_group.findall('student'):
+            stud_name = stud.find('name').text
+            stud_id = stud.find('id').text
+            is_passed = ask_yes_no("{}?".format(stud_name), 'yes')
+            is_male = ask_yes_no("Male?", 'yes')
+            if is_passed:
+                fscheine.write("\\makeschein{}{{{}}}{{{}}}\n".format(
+                    "" if is_male else "[f]", stud_name, stud_id))
+        fscheine.close()
 
 
 ########################################################################
