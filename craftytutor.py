@@ -580,8 +580,8 @@ class CraftyTutor(cmd.Cmd):
             stud_name = stud.find('name').text
             stud_id = stud.find('id').text
             is_passed = ask_yes_no("{}?".format(stud_name), 'yes')
-            is_male = ask_yes_no("Male?", 'yes')
             if is_passed:
+                is_male = ask_yes_no("Male?", 'yes')
                 fscheine.write("\\makeschein{}{{{}}}{{{}}}\n".format(
                     "" if is_male else "[f]", stud_name, stud_id))
         fscheine.close()
