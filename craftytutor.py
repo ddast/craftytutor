@@ -552,11 +552,11 @@ class CraftyTutor(cmd.Cmd):
             try:
                 perc_w = 100.*scores[0]/total_written
             except ZeroDivisionError:
-                perc_w = 100.
+                perc_w = 0.
             try:
                 perc_v = 100.*scores[1]/total_vote
             except ZeroDivisionError:
-                perc_v = 100.
+                perc_v = 0.
             ftable.write("({:.2f})({:.2f})".format(perc_v, perc_w))
             # score of current sheet
             for prob in xsheet.findall('prob'):
