@@ -23,6 +23,7 @@ import readline
 import cmd
 import argparse
 import os.path
+import operator
 import xml.etree.ElementTree as ET
 
 import stringcompleter.stringcompleter as stringcompleter
@@ -169,7 +170,8 @@ class CraftyTutor(cmd.Cmd):
         if not sheet:
             print("Specify sheet number.")
             return
-        lcursheet = self.root_sheets.findall("./sheet[@no='{}']".format(sheet))
+        lcursheet = self.root_sheets.findall("./sheet[@no={}]"
+                                             .format(stringToXPath(sheet)))
         if len(lcursheet) == 0:
             print("Sheet not defined. Use 'newsheet' first.")
             return
@@ -349,7 +351,8 @@ class CraftyTutor(cmd.Cmd):
                 # if we are here, student in not in list
                 print("Unknown student. Stop making up names!")
             # get xml tree of student
-            xstud = self.root_group.find("student[name='{}']".format(stud))
+            xstud = self.root_group.find("student[name={}]"
+                                         .format(stringToXPath(stud)))
             # rate this student
             self.ratesheet_singlestud(cursheet, prob_numbers, xstud)
 
@@ -389,10 +392,12 @@ class CraftyTutor(cmd.Cmd):
             else:
                 xprob = ET.SubElement(xsheet, 'prob', {'no': probno})
                 xprob.text = text_or_none(
-                        stud.find("./sheet[@no='{}']/prob[@no='{}']".format(
-                            sheetno, probno)))
+                        stud.find("./sheet[@no={}]/prob[@no={}]"
+                                  .format(stringToXPath(sheetno),
+                                          stringToXPath(probno))))
         # delete existing
-        lold = stud.findall("./sheet[@no='{}']".format(sheetno))
+        lold = stud.findall("./sheet[@no={}]"
+                            .format(stringToXPath(sheetno)))
         for old in lold:
             stud.remove(old)
         # add to student
@@ -430,7 +435,8 @@ class CraftyTutor(cmd.Cmd):
                 continue
             # increase number of presented problems
             xboard = self.root_group.findall(
-                    "./student[name='{}']/board".format(presenter))
+                    "./student[name={}]/board"
+                    .format(stringToXPath(presenter)))
             if len(xboard) != 1:
                 print("Panic!")
                 return
@@ -442,7 +448,8 @@ class CraftyTutor(cmd.Cmd):
         @problemtype: either 'w' or 'v' for written or voted problems
         """
         probs = self.root_sheets.findall(
-                "./sheet/prob[@type='{}']".format(problemtype))
+                "./sheet/prob[@type={}]"
+                .format(stringToXPath(problemtype)))
         total = 0.0
         for prob in probs:
             if prob.text:
@@ -456,8 +463,8 @@ class CraftyTutor(cmd.Cmd):
         @problemtype: either 'w' or 'v' for written or voted problems
         """
         probs = self.root_sheets.findall(
-                "./sheet[@no='{}']/prob[@type='{}']".format(sheet,
-                    problemtype))
+                "./sheet[@no={}]/prob[@type={}]"
+                .format(stringToXPath(sheet), stringToXPath(problemtype)))
         total = 0.0
         for prob in probs:
             if prob.text:
@@ -480,8 +487,9 @@ class CraftyTutor(cmd.Cmd):
                 prob_no = prob.attrib['no']
                 # get type
                 prob_type = self.root_sheets.find(
-                        "./sheet[@no='{}']/prob[@no='{}']".format(
-                            sheet_no, prob_no)).attrib['type']
+                        "./sheet[@no={}]/prob[@no={}]"
+                        .format(stringToXPath(sheet_no),
+                                stringToXPath(prob_no))).attrib['type']
                 # sum up
                 if not prob.text:
                     continue
@@ -562,8 +570,9 @@ class CraftyTutor(cmd.Cmd):
             for prob in xsheet.findall('prob'):
                 ftable.write("({})".format(
                     text_or_none(
-                        stud.find("./sheet[@no='{}']/prob[@no='{}']".format(
-                            sheet, prob.attrib['no']))
+                        stud.find("./sheet[@no={}]/prob[@no={}]"
+                                  .format(stringToXPath(sheet),
+                                          stringToXPath(prob.attrib['no'])))
                         )))
             ftable.write("\n")
         # finish
@@ -654,6 +663,13 @@ def text_or_none(xmltree):
         return ""
     else:
         return xmltree.text
+
+
+def stringToXPath(s):
+    """Build a sane XPath literal out of a string."""
+    if "'" not in s: return "'{}'".format(s)
+    if '"' not in s: return '"{}"'.format(s)
+    return "operator.concat('{}')".format(s.replace("'", "',\"'\",'"))
 
 
 def main():
