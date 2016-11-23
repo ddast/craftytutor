@@ -382,9 +382,6 @@ class CraftyTutor(cmd.Cmd):
                     except ValueError:
                         print("Only numbers allowed")
                         continue
-                    if fscore > float(maxscore):
-                        print("Score is greater than maximal score")
-                        continue
                     break
                 # store score
                 xprob.text = score
